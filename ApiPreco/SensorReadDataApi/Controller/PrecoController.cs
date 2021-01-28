@@ -40,8 +40,6 @@ namespace PrecoApi.Controller
 
 
 
-
-
                 //    List<Product> products = new List<Product>();
                 //    products.Add(new Product { Id = 10 });
                 //    products.Add(new Product { Id = 11 });
@@ -53,8 +51,9 @@ namespace PrecoApi.Controller
                 //    };
                 //    var json = new JavaScriptSerializer().Serialize(req);
                 //    Console.WriteLine(json);
-                             
-                var data = new BestPriceReturn();
+                List<Price> priceList = new List<Price>();
+
+                var data = GetPriceController.GetBestPrice(priceList);
 
                 return Ok(data);
             }
