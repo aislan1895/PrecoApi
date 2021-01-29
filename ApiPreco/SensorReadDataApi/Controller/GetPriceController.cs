@@ -10,38 +10,38 @@ namespace PrecoApi.Controller
     {
         //Ficará os métodos responsaveis por pegar cada tipo de preço
 
-        public static Price GetPriceOuro()
+        public static PriceReturn GetPriceOuro()
         {
-            return new Price();
+            return new PriceReturn();
         }
 
-        public static Price GetPriceAzul()
+        public static PriceReturn GetPriceAzul()
         {
-            return new Price();
+            return new PriceReturn();
         }
 
-        public static Price GetPriceSenior()
+        public static PriceReturn GetPriceSenior()
         {
-            return new Price();
+            return new PriceReturn();
         }
 
-        public static Price GetPriceDSM()
+        public static PriceReturn GetPriceDSM()
         {
-            return new Price();
+            return new PriceReturn();
         }
 
-        public static Price GetPriceSegmentado()
+        public static PriceReturn GetPriceSegmentado()
         {
-            return new Price();
+            return new PriceReturn();
         }
 
-        public static Price GetPriceEncarte()
+        public static PriceReturn GetPriceEncarte()
         {
-            return new Price();
+            return new PriceReturn();
         }
 
-        public static BestPriceReturn GetBestPrice(List<Price> priceList)
-        {
+        public static BestPriceReturn GetBestPrice(List<PriceReturn> priceList)
+        {   
             return new BestPriceReturn();
         }
     }    

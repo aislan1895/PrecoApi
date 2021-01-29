@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 
 namespace PrecoApi.Domain
 {
-    public class Price
+    public class PriceReturn
     {
         public long ProductId { get; set; }
-        public float SalePrice { get; set; }
+        public decimal SalePrice { get; set; }
         public decimal MaximumPrice { get; set; }
         public decimal PercentageDiscount { get; set; }
         public string DiscountType { get; set; }

@@ -18,11 +18,11 @@ namespace PrecoApi.Repository
             _connectionString = configuration.GetConnectionString("PrecoDataServer");
         }
 
-        public IEnumerable<Price> ListAll()
+        public IEnumerable<PriceReturn> ListAll()
         {
             using var connection = new SqlConnection(_connectionString);
 
-            var sensorData = connection.Query<Price>("select top 5 DPCA_CT_DESCPRDCAB, DPCA_CD_FILIAL, DPCA_TP_PRECOBASE from DESC_PRODUTO_CAB");
+            var sensorData = connection.Query<PriceReturn>("select top 5 DPCA_CT_DESCPRDCAB, DPCA_CD_FILIAL, DPCA_TP_PRECOBASE from DESC_PRODUTO_CAB");
 
             return sensorData;
         }        

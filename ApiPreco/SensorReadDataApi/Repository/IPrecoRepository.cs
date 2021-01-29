@@ -8,7 +8,7 @@ namespace PrecoApi.Repository
 {
     public interface IPrecoRepository
     {
-        public IEnumerable<Price> ListAll();
+        public IEnumerable<PriceReturn> ListAll();
        
     }
 }
