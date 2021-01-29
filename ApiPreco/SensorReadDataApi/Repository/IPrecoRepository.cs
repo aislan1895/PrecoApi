@@ -9,6 +9,8 @@ namespace PrecoApi.Repository
     public interface IPrecoRepository
     {
         public IEnumerable<PriceReturn> ListAll();
-       
+
+        public DiscountSegmentation GetDiscountSegmentation(long productCode, long filial, long medalCode);
+
     }
 }
