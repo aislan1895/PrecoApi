@@ -54,9 +54,21 @@ namespace PrecoApi.Controller
 
         public static BestPriceReturn GetBestPrice(List<PriceReturn> priceList)
         {
-            PriceReturn priceReturn = priceList.Min(x => x.SalePrice);
+            PriceReturn priceReturn = priceList.OrderBy(x => x.SalePrice).ToList()[0];
 
-            return new BestPriceReturn();
+            return new BestPriceReturn
+            {
+                Bestprice = Math.Round(priceReturn.SalePrice),
+                DiscountType = priceReturn.DiscountType,
+                FromPrice = Math.Round(priceReturn.MaximumPrice),
+                ProductId = priceReturn.ProductId,
+                DiscountPercentage = Math.Round(GestDiscount(priceReturn),2)
+            };
+        }
+
+        private static decimal GestDiscount(PriceReturn priceReturn)
+        {
+            return ((priceReturn.MaximumPrice - priceReturn.SalePrice) / priceReturn.MaximumPrice) * 100;
         }
     }
 }
