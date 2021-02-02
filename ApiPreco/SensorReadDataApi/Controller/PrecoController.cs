@@ -27,48 +27,6 @@ namespace PrecoApi.Controller
             _precoRepository = precoRepository;
         }
 
-//        [HttpGet]
-//        public IActionResult GetBestPrice([FromBody] RequisitionData request)
-//        {
-//            try
-//            {
-//                //ExternalAccessController externalAccessController = new ExternalAccessController();
-
-//                //var customer = externalAccessController.GetCustomerScoreAsync(request.CpfCnpjCustomer);                
-            
-//.                /*
-//                 Identificar a medalha do cliente.
-//                 Identificar o percentual de desconto da medalha para aquele produto
-//                 Pegar o preço da medalha e preço segmentado caso seja Ouro ou Senior
-//                 Chamar api de preço base caso seja Azul                 
-//                 */
-
-
-
-//                //    List<Product> products = new List<Product>();
-//                //    products.Add(new Product { Id = 10 });
-//                //    products.Add(new Product { Id = 11 });
-//                //    Request req = new Request
-//                //    {
-//                //        CpfcnpjCustomer = "1234567",
-//                //        StoreId = 100,
-//                //        Products = products
-//                //    };
-//                //    var json = new JavaScriptSerializer().Serialize(req);
-//                //    Console.WriteLine(json);
-//                List<Price> priceList = new List<Price>();
-
-//                var data = GetPriceController.GetBestPrice(priceList);
-
-//                return Ok(data);
-//            }
-//            catch (Exception ex)
-//            {
-//                _logger.LogError(ex, "Erro ao tentar obter dados");
-//                return new StatusCodeResult(500);
-//            }
-//        }
-
         [HttpGet]
         public IActionResult GetBestPrice([FromBody] RequisitionData request)
         {
