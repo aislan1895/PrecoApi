@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Nancy.Json;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using PrecoApi.Domain;
 using PrecoApi.Domain.ExternalApi;
-using PrecoApi.Repository;
+using PrecoApi.Service.Interface;
+using System;
+using System.Collections.Generic;
 
 namespace PrecoApi.Controller
 {
@@ -19,12 +13,12 @@ namespace PrecoApi.Controller
     public class PrecoController : ControllerBase
     {
         private readonly ILogger<PrecoController> _logger;
-        private readonly IPrecoRepository _precoRepository;
+        private readonly IProductPriceService _productPriceService;
 
-        public PrecoController(ILogger<PrecoController> logger, IPrecoRepository precoRepository)
+        public PrecoController(ILogger<PrecoController> logger, IProductPriceService productPriceService)
         {
             _logger = logger;
-            _precoRepository = precoRepository;
+            _productPriceService = productPriceService;
         }
 
         [HttpGet]
@@ -43,7 +37,7 @@ namespace PrecoApi.Controller
                 priceReturn = new PriceReturn {
                     DiscountType = "Azul",
                     MaximumPrice = Decimal.Parse(priceBased.maxPrice),
-                    PercentageDiscount = 0,
+                    PercentageDiscount = _productPriceService.GetMedalDiscount(1, 1, 1).PercentualDesconto,
                     ProductId = request.Products[0].Id,
                     SalePrice = Decimal.Parse(priceBased.salePrice)
                 };
@@ -56,14 +50,14 @@ namespace PrecoApi.Controller
                     {
                         DiscountType = "Ouro",
                         MaximumPrice = Decimal.Parse(priceBased.maxPrice),
-                        PercentageDiscount = 5,
+                        PercentageDiscount = _productPriceService.GetMedalDiscount(1, 1, 1).PercentualDesconto,
                         ProductId = request.Products[0].Id,
                         SalePrice = Decimal.Parse(priceBased.salePrice) - Decimal.Multiply(Decimal.Parse(priceBased.salePrice), Decimal.Parse("0,05"))
                     };
                 }
                 priceReturnList.Add(priceReturn);                
 
-                var data = GetPriceController.GetBestPrice(priceReturnList);
+                var data = _productPriceService.GetBestPrice(priceReturnList);
 
                 return Ok(data);
             }

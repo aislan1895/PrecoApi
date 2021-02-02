@@ -10,7 +10,7 @@ namespace PrecoApi.Repository
     {
         public IEnumerable<PriceReturn> ListAll();
 
-        public DiscountSegmentation GetDiscountSegmentation(long productCode, long filial, long medalCode);
+        public MedalDiscount GetMedalDiscount(long productCode, long filial, long medalCode);
 
     }
 }

@@ -29,16 +29,16 @@ namespace PrecoApi.Repository
             return sensorData;
         }
 
-        public DiscountSegmentation GetDiscountSegmentation(long productCode, long filial, long medalCode)
+        public MedalDiscount GetMedalDiscount(long productCode, long storeId, long medalCode)
         {
             var sql = PriceScripts.SELECT_SEGMENTACAO_DESCONTO_POR_FILIAL_CODIGO_PRODUTO_E_CODIGO_MEDALHA;
             using (var connection = new SqlConnection(_connectionString))
             {
                 var parameters = new DynamicParameters();
-                parameters.Add("@Filial", filial, DbType.Int32, ParameterDirection.Input);
+                parameters.Add("@Filial", storeId, DbType.Int32, ParameterDirection.Input);
                 parameters.Add("@CodigoProduto", productCode, DbType.Int32, ParameterDirection.Input);
                 parameters.Add("@CodigoMedalha", medalCode, DbType.Int32, ParameterDirection.Input);
-                DiscountSegmentation returnDiscount = connection.QueryFirstOrDefault<DiscountSegmentation>(sql, parameters);
+                MedalDiscount returnDiscount = connection.QueryFirstOrDefault<MedalDiscount>(sql, parameters);
                 return returnDiscount;
             }
         }

@@ -1,9 +1,11 @@
 ﻿using PrecoApi.Domain;
+using System.Collections.Generic;
 
 namespace PrecoApi.Service.Interface
 {
     public interface IProductPriceService
     {
-        DiscountSegmentation GetDiscountSegmentation(long productCode, long filial, long medalCode);
+        MedalDiscount GetMedalDiscount(long productCode, long storeId, long medalCode);
+        BestPriceReturn GetBestPrice(List<PriceReturn> priceList);
     }
 }
