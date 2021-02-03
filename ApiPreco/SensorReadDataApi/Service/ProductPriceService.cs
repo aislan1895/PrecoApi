@@ -23,7 +23,22 @@ namespace PrecoApi.Service
             _precoRepository = precoRepository;
         }
 
-        public ReturnPrice GetPriceOuroAndSenior(ReturnPrice baseReturnPrice, long storeId, CodeMedal medalCode)
+        public ReturnPrice GetPriceOuro(ReturnPrice baseReturnPrice, long storeId, CodeMedal medalCode)
+        {
+            MedalDiscount medalDiscount = GetMedalDiscount(baseReturnPrice.ProductId, storeId, medalCode);
+
+            ReturnPrice returnPrice = new ReturnPrice
+            {
+                DiscountType = medalCode.ToString(),
+                MaximumPrice = baseReturnPrice.SalePrice,
+                PercentageDiscount = medalDiscount.PercentualDesconto,
+                ProductId = baseReturnPrice.ProductId,
+                SalePrice = baseReturnPrice.SalePrice - Decimal.Multiply(baseReturnPrice.SalePrice, medalDiscount.PercentualDesconto / 100)
+            };
+            return returnPrice;
+        }
+
+        public ReturnPrice GetPriceSenior(ReturnPrice baseReturnPrice, long storeId, CodeMedal medalCode)
         {
             MedalDiscount medalDiscount = GetMedalDiscount(baseReturnPrice.ProductId, storeId, medalCode);
 
@@ -33,7 +48,7 @@ namespace PrecoApi.Service
                 MaximumPrice = baseReturnPrice.MaximumPrice,
                 PercentageDiscount = medalDiscount.PercentualDesconto,
                 ProductId = baseReturnPrice.ProductId,
-                SalePrice = baseReturnPrice.SalePrice - Decimal.Multiply(baseReturnPrice.SalePrice, medalDiscount.PercentualDesconto / 100)
+                SalePrice = baseReturnPrice.MaximumPrice - Decimal.Multiply(baseReturnPrice.SalePrice, medalDiscount.PercentualDesconto / 100)
             };
             return returnPrice;
         }
@@ -82,9 +97,9 @@ namespace PrecoApi.Service
 
             return new BestPriceReturn
             {
-                Bestprice = priceReturn.SalePrice,
+                Bestprice = Math.Round(priceReturn.SalePrice,2),
                 DiscountType = priceReturn.DiscountType,
-                FromPrice = priceReturn.MaximumPrice,
+                FromPrice = Math.Round(priceReturn.MaximumPrice,2),
                 ProductId = priceReturn.ProductId,
                 DiscountPercentage = priceReturn.PercentageDiscount
             };

@@ -12,6 +12,7 @@ namespace PrecoApi.Service.Interface
         BestPriceReturn GetBestPrice(List<ReturnPrice> priceList);
         Task<ReturnPrice> GetPriceAzulAsync(string productId, string storeId);
         Task<CustomerScore> GetCustomerScoreAsync(string cpfCnpj);
-        ReturnPrice GetPriceOuroAndSenior(ReturnPrice returnPriceBase, long storeId, CodeMedal medalCode);        
+        ReturnPrice GetPriceOuro(ReturnPrice returnPriceBase, long storeId, CodeMedal medalCode);
+        ReturnPrice GetPriceSenior(ReturnPrice baseReturnPrice, long storeId, CodeMedal medalCode);
     }
 }

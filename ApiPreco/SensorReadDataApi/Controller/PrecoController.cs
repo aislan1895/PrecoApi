@@ -39,11 +39,11 @@ namespace PrecoApi.Controller
                     
                     if (customerScore.Score.Description == CodeMedal.Ouro.ToString().ToUpper())
                     {
-                        returnPriceList.Add(_productPriceService.GetPriceOuroAndSenior(baseReturnprice, request.StoreId, CodeMedal.Ouro));
+                        returnPriceList.Add(_productPriceService.GetPriceOuro(baseReturnprice, request.StoreId, CodeMedal.Ouro));
                     }
                     else if (customerScore.Score.Description == CodeMedal.Senior.ToString().ToUpper())
                     {
-                        returnPriceList.Add(_productPriceService.GetPriceOuroAndSenior(baseReturnprice, request.StoreId, CodeMedal.Senior));
+                        returnPriceList.Add(_productPriceService.GetPriceSenior(baseReturnprice, request.StoreId, CodeMedal.Senior));
                     }
 
                     bestPriceReturnList.Add(_productPriceService.GetBestPrice(returnPriceList));
