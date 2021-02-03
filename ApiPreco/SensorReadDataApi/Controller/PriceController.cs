@@ -11,12 +11,12 @@ namespace PrecoApi.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class PrecoController : ControllerBase
+    public class PriceController : ControllerBase
     {
-        private readonly ILogger<PrecoController> _logger;
+        private readonly ILogger<PriceController> _logger;
         private readonly IProductPriceService _productPriceService;
 
-        public PrecoController(ILogger<PrecoController> logger, IProductPriceService productPriceService)
+        public PriceController(ILogger<PriceController> logger, IProductPriceService productPriceService)
         {
             _logger = logger;
             _productPriceService = productPriceService;
