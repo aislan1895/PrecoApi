@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using PrecoApi.Domain;
+using PrecoApi.Domain.Enum;
 using PrecoApi.Domain.ExternalApi;
 using PrecoApi.Service.Interface;
 using System;
@@ -25,41 +26,30 @@ namespace PrecoApi.Controller
         public IActionResult GetBestPrice([FromBody] RequisitionData request)
         {
             try
-            {
-                ExternalAccessController externalAccessController = new ExternalAccessController();
-                List<PriceReturn> priceReturnList = new List<PriceReturn>();
-                PriceReturn priceReturn; 
+            {                
+                List<BestPriceReturn> bestPriceReturnList = new List<BestPriceReturn>();
 
-                CustomerScore customerScore = externalAccessController.GetCustomerScoreAsync(request.CpfCnpjCustomer).Result;
+                CustomerScore customerScore = _productPriceService.GetCustomerScoreAsync(request.CpfCnpjCustomer).Result;
 
-                Price priceBased = externalAccessController.GetPriceOuroAsync(request.Products[0].Id.ToString(), request.StoreId.ToString()).Result;
-
-                priceReturn = new PriceReturn {
-                    DiscountType = "Azul",
-                    MaximumPrice = Decimal.Parse(priceBased.maxPrice),
-                    PercentageDiscount = _productPriceService.GetMedalDiscount(1, 1, 1).PercentualDesconto,
-                    ProductId = request.Products[0].Id,
-                    SalePrice = Decimal.Parse(priceBased.salePrice)
-                };
-
-                priceReturnList.Add(priceReturn);
-
-                if (customerScore.Score.id == "2")
+                foreach (Product product in request.Products)
                 {
-                    priceReturn = new PriceReturn
+                    List<ReturnPrice> returnPriceList = new List<ReturnPrice>();
+                    ReturnPrice baseReturnprice = _productPriceService.GetPriceAzulAsync(product.Id.ToString(), request.StoreId.ToString()).Result;
+                    returnPriceList.Add(baseReturnprice);
+                    
+                    if (customerScore.Score.Description == CodeMedal.Ouro.ToString().ToUpper())
                     {
-                        DiscountType = "Ouro",
-                        MaximumPrice = Decimal.Parse(priceBased.maxPrice),
-                        PercentageDiscount = _productPriceService.GetMedalDiscount(1, 1, 1).PercentualDesconto,
-                        ProductId = request.Products[0].Id,
-                        SalePrice = Decimal.Parse(priceBased.salePrice) - Decimal.Multiply(Decimal.Parse(priceBased.salePrice), Decimal.Parse("0,05"))
-                    };
-                }
-                priceReturnList.Add(priceReturn);                
+                        returnPriceList.Add(_productPriceService.GetPriceOuroAndSenior(baseReturnprice, request.StoreId, CodeMedal.Ouro));
+                    }
+                    else if (customerScore.Score.Description == CodeMedal.Senior.ToString().ToUpper())
+                    {
+                        returnPriceList.Add(_productPriceService.GetPriceOuroAndSenior(baseReturnprice, request.StoreId, CodeMedal.Senior));
+                    }
 
-                var data = _productPriceService.GetBestPrice(priceReturnList);
+                    bestPriceReturnList.Add(_productPriceService.GetBestPrice(returnPriceList));
+                }                
 
-                return Ok(data);
+                return Ok(bestPriceReturnList);
             }
             catch (Exception ex)
             {

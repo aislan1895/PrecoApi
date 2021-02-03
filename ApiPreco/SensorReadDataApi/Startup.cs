@@ -1,14 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PrecoApi.Repository;
+using PrecoApi.Service;
+using PrecoApi.Service.Interface;
 
 namespace PrecoApi
 {
@@ -16,7 +13,8 @@ namespace PrecoApi
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IPrecoRepository, PrecoRepository>();
+            services.AddTransient<IPrecoRepository, PrecoRepository>();
+            services.AddTransient<IProductPriceService, ProductPriceService> ();
 
             services.AddMvcCore();
         }

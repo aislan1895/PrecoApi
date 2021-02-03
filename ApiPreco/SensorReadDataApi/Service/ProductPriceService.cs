@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Net.Http;
+using PrecoApi.Domain.Enum;
 
 namespace PrecoApi.Service
 {
@@ -17,64 +18,81 @@ namespace PrecoApi.Service
 
         private readonly IPrecoRepository _precoRepository;
 
-        public static PriceReturn GetPriceOuro()
+        public ProductPriceService(IPrecoRepository precoRepository)
         {
-            return new PriceReturn();
+            _precoRepository = precoRepository;
         }
 
-
-        public static PriceReturn GetPriceSenior()
+        public ReturnPrice GetPriceOuroAndSenior(ReturnPrice baseReturnPrice, long storeId, CodeMedal medalCode)
         {
-            return new PriceReturn();
+            MedalDiscount medalDiscount = GetMedalDiscount(baseReturnPrice.ProductId, storeId, medalCode);
+
+            ReturnPrice returnPrice = new ReturnPrice
+            {
+                DiscountType = medalCode.ToString(),
+                MaximumPrice = baseReturnPrice.MaximumPrice,
+                PercentageDiscount = medalDiscount.PercentualDesconto,
+                ProductId = baseReturnPrice.ProductId,
+                SalePrice = baseReturnPrice.SalePrice - Decimal.Multiply(baseReturnPrice.SalePrice, medalDiscount.PercentualDesconto / 100)
+            };
+            return returnPrice;
         }
 
-        public static PriceReturn GetPriceDSM()
+        public static ReturnPrice GetPriceDSM()
         {
-            return new PriceReturn();
+            return new ReturnPrice();
         }
 
-        public static PriceReturn GetPriceEncarte()
+        public static ReturnPrice GetPriceEncarte()
         {
-            return new PriceReturn();
+            return new ReturnPrice();
         }
-        public async Task<Price> GetPriceAzulAsync(string productId, string storeId)
+        public async Task<ReturnPrice> GetPriceAzulAsync(string productId, string storeId)
         {
-            PriceModel priceModel = await new RequestServices<PriceModel>(httpClient).SendResquest($"https://dev.apipmenos.com/price/v1/" + productId + "?subsidiaryId=" + storeId,
+            PriceModel priceModel = await new RequestServices<PriceModel>(httpClient).SendResquest($"https://dev.apipmenos.com/price/v1/" + productId + "?subsidiaryId=" + storeId, "vhubPbOuqb7X5ZEuflnJN1c3GlR03K2x4KzAt6d1");
 
-            return priceModel.price;
+            ReturnPrice priceReturn = new ReturnPrice
+            {
+                DiscountType = CodeMedal.Azul.ToString(),
+                MaximumPrice = Decimal.Parse(priceModel.price.maxPrice),
+                PercentageDiscount = 0,
+                ProductId = int.Parse(productId),
+                SalePrice = Decimal.Parse(priceModel.price.everBluePrice)
+            };
+
+            return priceReturn;
         }
 
         public async Task<CustomerScore> GetCustomerScoreAsync(string cpfCnpj)
         {
-            CustomerScoreModel customerScoreModel = await new RequestServices<CustomerScoreModel>(httpClient).SendResquest($"https://dev.apipmenos.com/customer/v1/score/" + cpfCnpj,
-                                                                                                                                               "4IBFLIlhDo4Uo9wXMGLd22JxPIax3DZwaNMSnK5w");
+            CustomerScoreModel customerScoreModel = await new RequestServices<CustomerScoreModel>(httpClient).SendResquest($"https://dev.apipmenos.com/customer/v1/score/" + cpfCnpj, "4IBFLIlhDo4Uo9wXMGLd22JxPIax3DZwaNMSnK5w");
             return customerScoreModel.customerScore;
         }
 
-        public MedalDiscount GetMedalDiscount(long productId, long storeId, long medalCode)
+        private MedalDiscount GetMedalDiscount(long productId, long storeId, CodeMedal medalCode)
         {
             MedalDiscount medalDiscount = _precoRepository.GetMedalDiscount(productId, storeId, medalCode);
-            
+
             return medalDiscount;
         }
 
-        public BestPriceReturn GetBestPrice(List<PriceReturn> priceList)
+        public BestPriceReturn GetBestPrice(List<ReturnPrice> priceList)
         {
-            PriceReturn priceReturn = priceList.OrderBy(x => x.SalePrice).ToList()[0];
+            ReturnPrice priceReturn = priceList.OrderBy(x => x.SalePrice).ToList()[0];
 
             return new BestPriceReturn
             {
-                Bestprice = Math.Round(priceReturn.SalePrice),
+                Bestprice = priceReturn.SalePrice,
                 DiscountType = priceReturn.DiscountType,
-                FromPrice = Math.Round(priceReturn.MaximumPrice),
+                FromPrice = priceReturn.MaximumPrice,
                 ProductId = priceReturn.ProductId,
-                DiscountPercentage = Math.Round(GetDiscount(priceReturn), 2)
+                DiscountPercentage = priceReturn.PercentageDiscount
             };
         }
 
-        private static decimal GetDiscount(PriceReturn priceReturn)
-        {
-            return ((priceReturn.MaximumPrice - priceReturn.SalePrice) / priceReturn.MaximumPrice) * 100;
-        }
+        //private static decimal GetDiscount(ReturnPrice priceReturn)
+        //{
+        //    return ((priceReturn.MaximumPrice - priceReturn.SalePrice) / priceReturn.MaximumPrice) * 100;
+        //}
     }
 }

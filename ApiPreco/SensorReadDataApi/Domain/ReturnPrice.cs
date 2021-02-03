@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace PrecoApi.Domain
 {
-    public class PriceReturn
+    public class ReturnPrice
     {
         public long ProductId { get; set; }
         public decimal SalePrice { get; set; }

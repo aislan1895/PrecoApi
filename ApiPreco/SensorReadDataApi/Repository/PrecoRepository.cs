@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Dapper;
 using Microsoft.Extensions.Configuration;
 using PrecoApi.Domain;
+using PrecoApi.Domain.Enum;
 using PrecoApi.Scripts;
 
 namespace PrecoApi.Repository
@@ -20,16 +21,16 @@ namespace PrecoApi.Repository
             _connectionString = configuration.GetConnectionString("PrecoDataServer");
         }
 
-        public IEnumerable<PriceReturn> ListAll()
+        public IEnumerable<ReturnPrice> ListAll()
         {
             using var connection = new SqlConnection(_connectionString);
 
-            var sensorData = connection.Query<PriceReturn>("select top 5 DPCA_CT_DESCPRDCAB, DPCA_CD_FILIAL, DPCA_TP_PRECOBASE from DESC_PRODUTO_CAB");
+            var sensorData = connection.Query<ReturnPrice>("select top 5 DPCA_CT_DESCPRDCAB, DPCA_CD_FILIAL, DPCA_TP_PRECOBASE from DESC_PRODUTO_CAB");
 
             return sensorData;
         }
 
-        public MedalDiscount GetMedalDiscount(long productCode, long storeId, long medalCode)
+        public MedalDiscount GetMedalDiscount(long productCode, long storeId, CodeMedal medalCode)
         {
             var sql = PriceScripts.SELECT_SEGMENTACAO_DESCONTO_POR_FILIAL_CODIGO_PRODUTO_E_CODIGO_MEDALHA;
             using (var connection = new SqlConnection(_connectionString))
