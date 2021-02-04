@@ -1,17 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace PrecoApi.Controller
+namespace PrecoApi.Service
 {
-    public class RequestServices<T>
+    public class RequestService<T>
     {
         private readonly HttpClient _httpClient;
 
-        public RequestServices(HttpClient httpClient)
+        public RequestService(HttpClient httpClient)
         {
             this._httpClient = httpClient;
         }        

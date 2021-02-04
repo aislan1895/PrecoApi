@@ -8,7 +8,6 @@ namespace PrecoApi.Service.Interface
 {
     public interface IProductPriceService
     {
-        //MedalDiscount GetMedalDiscount(long productCode, long storeId, CodeMedal medalCode);
         BestPriceReturn GetBestPrice(List<ReturnPrice> priceList);
         Task<ReturnPrice> GetPriceAzulAsync(string productId, string storeId);
         Task<CustomerScore> GetCustomerScoreAsync(string cpfCnpj);

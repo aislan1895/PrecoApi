@@ -1,22 +1,21 @@
-﻿using PrecoApi.Controller;
-using PrecoApi.Domain;
+﻿using PrecoApi.Domain;
+using PrecoApi.Domain.Enum;
 using PrecoApi.Domain.ExternalApi;
 using PrecoApi.Repository;
 using PrecoApi.Service.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Net.Http;
-using PrecoApi.Domain.Enum;
+using System.Threading.Tasks;
 
 namespace PrecoApi.Service
 {
     public class ProductPriceService : IProductPriceService
     {
-        HttpClient httpClient = new HttpClient();
 
         private readonly IPrecoRepository _precoRepository;
+        private readonly HttpClient httpClient = new HttpClient();
 
         public ProductPriceService(IPrecoRepository precoRepository)
         {
@@ -35,6 +34,7 @@ namespace PrecoApi.Service
                 ProductId = baseReturnPrice.ProductId,
                 SalePrice = baseReturnPrice.SalePrice - Decimal.Multiply(baseReturnPrice.SalePrice, medalDiscount.PercentualDesconto / 100)
             };
+
             return returnPrice;
         }
 
@@ -50,6 +50,7 @@ namespace PrecoApi.Service
                 ProductId = baseReturnPrice.ProductId,
                 SalePrice = baseReturnPrice.MaximumPrice - Decimal.Multiply(baseReturnPrice.SalePrice, medalDiscount.PercentualDesconto / 100)
             };
+
             return returnPrice;
         }
 
@@ -62,9 +63,10 @@ namespace PrecoApi.Service
         {
             return new ReturnPrice();
         }
+
         public async Task<ReturnPrice> GetPriceAzulAsync(string productId, string storeId)
         {
-            PriceModel priceModel = await new RequestServices<PriceModel>(httpClient).SendResquest($"https://dev.apipmenos.com/price/v1/" + productId + "?subsidiaryId=" + storeId, "vhubPbOuqb7X5ZEuflnJN1c3GlR03K2x4KzAt6d1");
+            PriceModel priceModel = await new RequestService<PriceModel>(httpClient).SendResquest($"https://dev.apipmenos.com/price/v1/" + productId + "?subsidiaryId=" + storeId, "vhubPbOuqb7X5ZEuflnJN1c3GlR03K2x4KzAt6d1");
 
             ReturnPrice priceReturn = new ReturnPrice
             {
@@ -80,15 +82,8 @@ namespace PrecoApi.Service
 
         public async Task<CustomerScore> GetCustomerScoreAsync(string cpfCnpj)
         {
-            CustomerScoreModel customerScoreModel = await new RequestServices<CustomerScoreModel>(httpClient).SendResquest($"https://dev.apipmenos.com/customer/v1/score/" + cpfCnpj, "4IBFLIlhDo4Uo9wXMGLd22JxPIax3DZwaNMSnK5w");
+            CustomerScoreModel customerScoreModel = await new RequestService<CustomerScoreModel>(httpClient).SendResquest($"https://dev.apipmenos.com/customer/v1/score/" + cpfCnpj, "4IBFLIlhDo4Uo9wXMGLd22JxPIax3DZwaNMSnK5w");
             return customerScoreModel.customerScore;
-        }
-
-        private MedalDiscount GetMedalDiscount(long productId, long storeId, CodeMedal medalCode)
-        {
-            MedalDiscount medalDiscount = _precoRepository.GetMedalDiscount(productId, storeId, medalCode);
-
-            return medalDiscount;
         }
 
         public BestPriceReturn GetBestPrice(List<ReturnPrice> priceList)
@@ -105,9 +100,11 @@ namespace PrecoApi.Service
             };
         }
 
-        //private static decimal GetDiscount(ReturnPrice priceReturn)
-        //{
-        //    return ((priceReturn.MaximumPrice - priceReturn.SalePrice) / priceReturn.MaximumPrice) * 100;
-        //}
+        private MedalDiscount GetMedalDiscount(long productId, long storeId, CodeMedal medalCode)
+        {
+            MedalDiscount medalDiscount = _precoRepository.GetMedalDiscount(productId, storeId, medalCode);
+
+            return medalDiscount;
+        }
     }
 }
