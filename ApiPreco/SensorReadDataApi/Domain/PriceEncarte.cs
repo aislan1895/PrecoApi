@@ -8,6 +8,6 @@ namespace PrecoApi.Domain
     public class PriceEncarte
     {
         public long ProductId { get; set; }
-        public decimal Price { get; set; }
+        public decimal SalePrice { get; set; }
     }
 }

@@ -37,7 +37,12 @@ namespace PrecoApi.Controller
                     ReturnPrice baseReturnprice = _productPriceService.GetPriceAzulAsync(product.Id.ToString(), request.StoreId.ToString()).Result;
                     returnPriceList.Add(baseReturnprice);
 
-                    PriceEncarte priceEncarte = _productPriceService.GetPriceEncarte(baseReturnprice, request.StoreId, Enum.Parse(MedalCode, customerScore.Score.Id) );
+                    ReturnPrice priceEncarte = _productPriceService.GetPriceEncarte(baseReturnprice, request.StoreId, (MedalCode)int.Parse(customerScore.Score.Id));
+
+                    if (priceEncarte.SalePrice > 0)
+                    {
+                        returnPriceList.Add(priceEncarte);
+                    }
                     
                     if (customerScore.Score.Description == MedalCode.Ouro.ToString().ToUpper())
                     {

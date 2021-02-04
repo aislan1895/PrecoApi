@@ -13,5 +13,6 @@ namespace PrecoApi.Domain
         public decimal DiscountPercentage { get; set; }
 
         public DiscountType DiscountType { get; set; }
+        public string DiscountTypeDescription { get => DiscountType.ToString(); }
     }
 }

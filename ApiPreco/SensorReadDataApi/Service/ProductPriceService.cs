@@ -59,18 +59,23 @@ namespace PrecoApi.Service
             return new ReturnPrice();
         }
 
-        public ReturnPrice GetPriceEncarte(ReturnPrice returnPrice, long storeId, MedalCode codeMedal)
+        public ReturnPrice GetPriceEncarte(ReturnPrice returnPrice, long storeId, MedalCode medalCode)
         {
-            PriceEncarte priceEncarte = _precoRepository.GetPriceEncarte(returnPrice.ProductId, storeId, codeMedal);
+            PriceEncarte priceEncarte = _precoRepository.GetPriceEncarte(returnPrice.ProductId, storeId, medalCode);
 
-            return new ReturnPrice
+            ReturnPrice price = new ReturnPrice();
+            if (priceEncarte.SalePrice > 0)
             {
-                ProductId = returnPrice.ProductId,
-                SalePrice = priceEncarte.Price,
-                MaximumPrice = returnPrice.SalePrice,
-                DiscountType = DiscountType.Encarte,
-                PercentageDiscount = Math.Round(((returnPrice.SalePrice - priceEncarte.Price) / returnPrice.SalePrice) * 100,2)
-            };
+                price = new ReturnPrice
+                {
+                    ProductId = returnPrice.ProductId,
+                    SalePrice = priceEncarte.SalePrice,
+                    MaximumPrice = returnPrice.SalePrice,
+                    DiscountType = DiscountType.Encarte,
+                    PercentageDiscount = Math.Round(((returnPrice.SalePrice - priceEncarte.SalePrice) / returnPrice.SalePrice) * 100, 2)
+                };
+            }
+            return price;
         }
 
         public async Task<ReturnPrice> GetPriceAzulAsync(string productId, string storeId)
