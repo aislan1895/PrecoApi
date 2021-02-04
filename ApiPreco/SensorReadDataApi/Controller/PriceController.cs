@@ -36,14 +36,16 @@ namespace PrecoApi.Controller
                     List<ReturnPrice> returnPriceList = new List<ReturnPrice>();
                     ReturnPrice baseReturnprice = _productPriceService.GetPriceAzulAsync(product.Id.ToString(), request.StoreId.ToString()).Result;
                     returnPriceList.Add(baseReturnprice);
+
+                    PriceEncarte priceEncarte = _productPriceService.GetPriceEncarte(baseReturnprice, request.StoreId, Enum.Parse(MedalCode, customerScore.Score.Id) );
                     
-                    if (customerScore.Score.Description == CodeMedal.Ouro.ToString().ToUpper())
+                    if (customerScore.Score.Description == MedalCode.Ouro.ToString().ToUpper())
                     {
-                        returnPriceList.Add(_productPriceService.GetPriceOuro(baseReturnprice, request.StoreId, CodeMedal.Ouro));
+                        returnPriceList.Add(_productPriceService.GetPriceOuro(baseReturnprice, request.StoreId, MedalCode.Ouro));
                     }
-                    else if (customerScore.Score.Description == CodeMedal.Senior.ToString().ToUpper())
+                    else if (customerScore.Score.Description == MedalCode.Senior.ToString().ToUpper())
                     {
-                        returnPriceList.Add(_productPriceService.GetPriceSenior(baseReturnprice, request.StoreId, CodeMedal.Senior));
+                        returnPriceList.Add(_productPriceService.GetPriceSenior(baseReturnprice, request.StoreId, MedalCode.Senior));
                     }
 
                     bestPriceReturnList.Add(_productPriceService.GetBestPrice(returnPriceList));

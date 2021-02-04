@@ -1,4 +1,6 @@
-﻿namespace PrecoApi.Domain
+﻿using PrecoApi.Domain.Enum;
+
+namespace PrecoApi.Domain
 {
     public class BestPriceReturn
     {
@@ -10,6 +12,6 @@
 
         public decimal DiscountPercentage { get; set; }
 
-        public string DiscountType { get; set; }
+        public DiscountType DiscountType { get; set; }
     }
 }

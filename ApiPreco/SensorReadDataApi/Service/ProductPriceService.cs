@@ -22,13 +22,13 @@ namespace PrecoApi.Service
             _precoRepository = precoRepository;
         }
 
-        public ReturnPrice GetPriceOuro(ReturnPrice baseReturnPrice, long storeId, CodeMedal medalCode)
+        public ReturnPrice GetPriceOuro(ReturnPrice baseReturnPrice, long storeId, MedalCode medalCode)
         {
             MedalDiscount medalDiscount = GetMedalDiscount(baseReturnPrice.ProductId, storeId, medalCode);
 
             ReturnPrice returnPrice = new ReturnPrice
             {
-                DiscountType = medalCode.ToString(),
+                DiscountType = DiscountType.Ouro,
                 MaximumPrice = baseReturnPrice.SalePrice,
                 PercentageDiscount = medalDiscount.PercentualDesconto,
                 ProductId = baseReturnPrice.ProductId,
@@ -38,13 +38,13 @@ namespace PrecoApi.Service
             return returnPrice;
         }
 
-        public ReturnPrice GetPriceSenior(ReturnPrice baseReturnPrice, long storeId, CodeMedal medalCode)
+        public ReturnPrice GetPriceSenior(ReturnPrice baseReturnPrice, long storeId, MedalCode medalCode)
         {
             MedalDiscount medalDiscount = GetMedalDiscount(baseReturnPrice.ProductId, storeId, medalCode);
 
             ReturnPrice returnPrice = new ReturnPrice
             {
-                DiscountType = medalCode.ToString(),
+                DiscountType = DiscountType.Senior,
                 MaximumPrice = baseReturnPrice.MaximumPrice,
                 PercentageDiscount = medalDiscount.PercentualDesconto,
                 ProductId = baseReturnPrice.ProductId,
@@ -59,9 +59,18 @@ namespace PrecoApi.Service
             return new ReturnPrice();
         }
 
-        public static ReturnPrice GetPriceEncarte()
+        public ReturnPrice GetPriceEncarte(ReturnPrice returnPrice, long storeId, MedalCode codeMedal)
         {
-            return new ReturnPrice();
+            PriceEncarte priceEncarte = _precoRepository.GetPriceEncarte(returnPrice.ProductId, storeId, codeMedal);
+
+            return new ReturnPrice
+            {
+                ProductId = returnPrice.ProductId,
+                SalePrice = priceEncarte.Price,
+                MaximumPrice = returnPrice.SalePrice,
+                DiscountType = DiscountType.Encarte,
+                PercentageDiscount = Math.Round(((returnPrice.SalePrice - priceEncarte.Price) / returnPrice.SalePrice) * 100,2)
+            };
         }
 
         public async Task<ReturnPrice> GetPriceAzulAsync(string productId, string storeId)
@@ -70,7 +79,7 @@ namespace PrecoApi.Service
 
             ReturnPrice priceReturn = new ReturnPrice
             {
-                DiscountType = CodeMedal.Azul.ToString(),
+                DiscountType = DiscountType.Azul,
                 MaximumPrice = Decimal.Parse(priceModel.price.maxPrice),
                 PercentageDiscount = 0,
                 ProductId = int.Parse(productId),
@@ -100,7 +109,7 @@ namespace PrecoApi.Service
             };
         }
 
-        private MedalDiscount GetMedalDiscount(long productId, long storeId, CodeMedal medalCode)
+        private MedalDiscount GetMedalDiscount(long productId, long storeId, MedalCode medalCode)
         {
             MedalDiscount medalDiscount = _precoRepository.GetMedalDiscount(productId, storeId, medalCode);
 

@@ -5,6 +5,7 @@ namespace PrecoApi.Repository
 {
     public interface IPrecoRepository
     {
-        public MedalDiscount GetMedalDiscount(long productCode, long filial, CodeMedal medalCode);
+        MedalDiscount GetMedalDiscount(long productCode, long filial, MedalCode medalCode);
+        PriceEncarte GetPriceEncarte(long productId, long storeId, MedalCode medalCode);
     }
 }
