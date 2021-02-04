@@ -12,26 +12,33 @@ namespace PrecoApi.Service
         public RequestService(HttpClient httpClient)
         {
             this._httpClient = httpClient;
-        }        
+        }
 
         public async Task<T> SendResquest(string url, string header)
         {
             try
             {
-                T response = default;
+                var httpClientHandler = new HttpClientHandler();
 
-                if (!String.IsNullOrWhiteSpace(header))
+                httpClientHandler.ServerCertificateCustomValidationCallback = (messege, cert, chain, errors) => { return true; };
+
+                using (var client = new HttpClient(httpClientHandler))
                 {
-                    _httpClient.DefaultRequestHeaders.Clear();
-                    _httpClient.DefaultRequestHeaders.Add("x-api-key", header);
+                    T response = default;
+
+                    if (!String.IsNullOrWhiteSpace(header))
+                    {
+                        client.DefaultRequestHeaders.Clear();
+                        client.DefaultRequestHeaders.Add("x-api-key", header);
+                    }
+
+                    var responseRequest = await client.GetStringAsync(url);
+
+                    if (responseRequest.Length > 0)
+                        response = JsonSerializer.Deserialize<T>(responseRequest);
+
+                    return response;
                 }
-
-                var responseRequest = await _httpClient.GetStringAsync(url);
-
-                if (responseRequest.Length > 0)
-                    response = JsonSerializer.Deserialize<T>(responseRequest);
-
-                return response;
             }
             catch (Exception ex)
             {
