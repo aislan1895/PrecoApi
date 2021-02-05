@@ -32,8 +32,7 @@ namespace PrecoApi.Service
             {
                 List<ReturnPrice> returnPriceList = new List<ReturnPrice>();
 
-                ReturnPrice baseReturnprice = GetPriceAzulAsync(product.Id.ToString(), request.StoreId.ToString()).Result;
-                returnPriceList.Add(baseReturnprice);
+                ReturnPrice baseReturnprice = GetPriceAzulAsync(product.Id.ToString(), request.StoreId.ToString(), customerScore.Score != null).Result;
 
                 ReturnPrice priceEncarte = GetPriceEncarte(baseReturnprice, customerScore, request.StoreId);
 
@@ -46,6 +45,12 @@ namespace PrecoApi.Service
                         returnPriceList.Add(GetPriceOuro(baseReturnprice, request.StoreId, MedalCode.Ouro));
                     else if (customerScore.Score.Description == MedalCode.Senior.ToString().ToUpper())
                         returnPriceList.Add(GetPriceSenior(baseReturnprice, request.StoreId, MedalCode.Senior));
+                    else
+                        returnPriceList.Add(baseReturnprice);
+                }
+                else
+                {
+                    returnPriceList.Add(GetPriceNotRegistered(baseReturnprice));
                 }
 
                 bestPriceReturnList.Add(GetBestPrice(returnPriceList));
@@ -80,7 +85,21 @@ namespace PrecoApi.Service
                 MaximumPrice = baseReturnPrice.MaximumPrice,
                 PercentageDiscount = medalDiscount.PercentualDesconto,
                 ProductId = baseReturnPrice.ProductId,
-                SalePrice = baseReturnPrice.MaximumPrice - Decimal.Multiply(baseReturnPrice.SalePrice, medalDiscount.PercentualDesconto / 100)
+                SalePrice = baseReturnPrice.MaximumPrice - Decimal.Multiply(baseReturnPrice.MaximumPrice, medalDiscount.PercentualDesconto / 100)
+            };
+
+            return returnPrice;
+        }
+
+        public ReturnPrice GetPriceNotRegistered(ReturnPrice baseReturnPrice)
+        {
+            ReturnPrice returnPrice = new ReturnPrice
+            {
+                DiscountType = DiscountType.NãoCadastrado,
+                MaximumPrice = baseReturnPrice.SalePrice,
+                PercentageDiscount = 0,
+                ProductId = baseReturnPrice.ProductId,
+                SalePrice = baseReturnPrice.SalePrice
             };
 
             return returnPrice;
@@ -91,26 +110,33 @@ namespace PrecoApi.Service
             return new ReturnPrice();
         }
 
-        public async Task<ReturnPrice> GetPriceAzulAsync(string productId, string storeId)
+        public async Task<ReturnPrice> GetPriceAzulAsync(string productId, string storeId, bool customerRegistered)
         {
             PriceModel priceModel = await new RequestService<PriceModel>(httpClient).SendResquest($"https://dev.apipmenos.com/price/v1/" + productId + "?subsidiaryId=" + storeId, "vhubPbOuqb7X5ZEuflnJN1c3GlR03K2x4KzAt6d1");
+            Decimal SalePrice;
 
-            ReturnPrice priceReturn = new ReturnPrice
+            if (customerRegistered)
+                SalePrice = Decimal.Parse(priceModel.price.everBluePrice);
+            else
+                SalePrice = Decimal.Parse(priceModel.price.salePrice);
+
+
+            ReturnPrice returnPrice = new ReturnPrice
             {
                 DiscountType = DiscountType.Azul,
-                MaximumPrice = Decimal.Parse(priceModel.price.maxPrice),
-                PercentageDiscount = 0,
+                MaximumPrice = Decimal.Parse(priceModel.price.salePrice),
+                PercentageDiscount = Math.Round(((Decimal.Parse(priceModel.price.salePrice) - SalePrice) / Decimal.Parse(priceModel.price.salePrice)) * 100, 2),
                 ProductId = int.Parse(productId),
-                SalePrice = Decimal.Parse(priceModel.price.everBluePrice)
+                SalePrice = SalePrice
             };
 
-            return priceReturn;
+            return returnPrice;
         }
 
         public async Task<CustomerScore> GetCustomerScoreAsync(string cpfCnpj)
         {
             CustomerScoreModel customerScoreModel = await new RequestService<CustomerScoreModel>(httpClient).SendResquest($"https://dev.apipmenos.com/customer/v1/score/" + cpfCnpj, "4IBFLIlhDo4Uo9wXMGLd22JxPIax3DZwaNMSnK5w");
-            
+
             return customerScoreModel.customerScore;
         }
 

@@ -9,6 +9,7 @@
         DSM = 5,
         PBM = 6,
         UltimaChance = 7,
-        Segmentado = 8
+        Segmentado = 8,
+        NãoCadastrado = 9
     }
 }
