@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using PrecoApi.Domain;
+﻿using PrecoApi.Domain;
 using PrecoApi.Domain.Enum;
 using PrecoApi.Domain.ExternalApi;
 using PrecoApi.Repository;
