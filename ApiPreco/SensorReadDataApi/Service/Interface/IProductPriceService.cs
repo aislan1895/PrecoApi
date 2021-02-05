@@ -13,6 +13,6 @@ namespace PrecoApi.Service.Interface
         Task<CustomerScore> GetCustomerScoreAsync(string cpfCnpj);
         ReturnPrice GetPriceOuro(ReturnPrice returnPriceBase, long storeId, MedalCode medalCode);
         ReturnPrice GetPriceSenior(ReturnPrice baseReturnPrice, long storeId, MedalCode medalCode);
-        ReturnPrice GetPriceEncarte(ReturnPrice returnPrice, long storeId, MedalCode codeMedal);
+        List<BestPriceReturn> GetPrice(RequisitionData request);
     }
 }

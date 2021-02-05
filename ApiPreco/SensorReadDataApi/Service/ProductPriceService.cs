@@ -1,4 +1,6 @@
-﻿using PrecoApi.Domain;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using PrecoApi.Domain;
 using PrecoApi.Domain.Enum;
 using PrecoApi.Domain.ExternalApi;
 using PrecoApi.Repository;
@@ -20,6 +22,38 @@ namespace PrecoApi.Service
         public ProductPriceService(IPrecoRepository precoRepository)
         {
             _precoRepository = precoRepository;
+        }
+
+        public List<BestPriceReturn> GetPrice(RequisitionData request)
+        {
+            List<BestPriceReturn> bestPriceReturnList = new List<BestPriceReturn>();
+
+            CustomerScore customerScore = GetCustomerScoreAsync(request.CpfCnpjCustomer).Result;
+
+            foreach (Product product in request.Products)
+            {
+                List<ReturnPrice> returnPriceList = new List<ReturnPrice>();
+
+                ReturnPrice baseReturnprice = GetPriceAzulAsync(product.Id.ToString(), request.StoreId.ToString()).Result;
+                returnPriceList.Add(baseReturnprice);
+
+                ReturnPrice priceEncarte = GetPriceEncarte(baseReturnprice, customerScore, request.StoreId);
+
+                if (priceEncarte.SalePrice > 0)
+                    returnPriceList.Add(priceEncarte);
+
+                if (customerScore.Score != null)
+                {
+                    if (customerScore.Score.Description == MedalCode.Ouro.ToString().ToUpper())
+                        returnPriceList.Add(GetPriceOuro(baseReturnprice, request.StoreId, MedalCode.Ouro));
+                    else if (customerScore.Score.Description == MedalCode.Senior.ToString().ToUpper())
+                        returnPriceList.Add(GetPriceSenior(baseReturnprice, request.StoreId, MedalCode.Senior));
+                }
+
+                bestPriceReturnList.Add(GetBestPrice(returnPriceList));
+            }
+
+            return bestPriceReturnList;
         }
 
         public ReturnPrice GetPriceOuro(ReturnPrice baseReturnPrice, long storeId, MedalCode medalCode)
@@ -59,25 +93,6 @@ namespace PrecoApi.Service
             return new ReturnPrice();
         }
 
-        public ReturnPrice GetPriceEncarte(ReturnPrice returnPrice, long storeId, MedalCode medalCode)
-        {
-            PriceEncarte priceEncarte = _precoRepository.GetPriceEncarte(returnPrice.ProductId, storeId, medalCode);
-
-            ReturnPrice price = new ReturnPrice();
-            if (priceEncarte.SalePrice > 0)
-            {
-                price = new ReturnPrice
-                {
-                    ProductId = returnPrice.ProductId,
-                    SalePrice = priceEncarte.SalePrice,
-                    MaximumPrice = returnPrice.SalePrice,
-                    DiscountType = DiscountType.Encarte,
-                    PercentageDiscount = Math.Round(((returnPrice.SalePrice - priceEncarte.SalePrice) / returnPrice.SalePrice) * 100, 2)
-                };
-            }
-            return price;
-        }
-
         public async Task<ReturnPrice> GetPriceAzulAsync(string productId, string storeId)
         {
             PriceModel priceModel = await new RequestService<PriceModel>(httpClient).SendResquest($"https://dev.apipmenos.com/price/v1/" + productId + "?subsidiaryId=" + storeId, "vhubPbOuqb7X5ZEuflnJN1c3GlR03K2x4KzAt6d1");
@@ -97,6 +112,7 @@ namespace PrecoApi.Service
         public async Task<CustomerScore> GetCustomerScoreAsync(string cpfCnpj)
         {
             CustomerScoreModel customerScoreModel = await new RequestService<CustomerScoreModel>(httpClient).SendResquest($"https://dev.apipmenos.com/customer/v1/score/" + cpfCnpj, "4IBFLIlhDo4Uo9wXMGLd22JxPIax3DZwaNMSnK5w");
+            
             return customerScoreModel.customerScore;
         }
 
@@ -106,12 +122,40 @@ namespace PrecoApi.Service
 
             return new BestPriceReturn
             {
-                Bestprice = Math.Round(priceReturn.SalePrice,2),
+                Bestprice = Math.Round(priceReturn.SalePrice, 2),
                 DiscountType = priceReturn.DiscountType,
-                FromPrice = Math.Round(priceReturn.MaximumPrice,2),
+                FromPrice = Math.Round(priceReturn.MaximumPrice, 2),
                 ProductId = priceReturn.ProductId,
                 DiscountPercentage = priceReturn.PercentageDiscount
             };
+        }
+
+        private ReturnPrice GetPriceEncarte(ReturnPrice returnPrice, CustomerScore customerScore, long storeId)
+        {
+            MedalCode medalCode;
+
+            if (customerScore.Score == null)
+                medalCode = MedalCode.NotRegistered;
+            else
+                medalCode = (MedalCode)int.Parse(customerScore.Score.Id);
+
+            PriceEncarte priceEncarte = _precoRepository.GetPriceEncarte(returnPrice.ProductId, storeId, medalCode);
+
+            ReturnPrice price = new ReturnPrice();
+
+            if (priceEncarte.SalePrice > 0)
+            {
+                price = new ReturnPrice
+                {
+                    ProductId = returnPrice.ProductId,
+                    SalePrice = priceEncarte.SalePrice,
+                    MaximumPrice = returnPrice.SalePrice,
+                    DiscountType = DiscountType.Encarte,
+                    PercentageDiscount = Math.Round(((returnPrice.SalePrice - priceEncarte.SalePrice) / returnPrice.SalePrice) * 100, 2)
+                };
+            }
+
+            return price;
         }
 
         private MedalDiscount GetMedalDiscount(long productId, long storeId, MedalCode medalCode)
