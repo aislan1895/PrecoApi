@@ -13,7 +13,6 @@ namespace PrecoApi.Service
 {
     public class ProductPriceService : IProductPriceService
     {
-
         private readonly IPrecoRepository _precoRepository;
         private readonly HttpClient httpClient = new HttpClient();
 
@@ -41,12 +40,21 @@ namespace PrecoApi.Service
 
                 if (customerScore.Score != null)
                 {
-                    if (customerScore.Score.Description == MedalCode.Ouro.ToString().ToUpper())
-                        returnPriceList.Add(GetPriceOuro(baseReturnprice, request.StoreId, MedalCode.Ouro));
-                    else if (customerScore.Score.Description == MedalCode.Senior.ToString().ToUpper())
-                        returnPriceList.Add(GetPriceSenior(baseReturnprice, request.StoreId, MedalCode.Senior));
-                    else
-                        returnPriceList.Add(baseReturnprice);
+                    switch ((MedalCode)Enum.Parse(typeof(MedalCode), customerScore.Score.Id))
+                    {
+                        case MedalCode.Ouro:
+                            returnPriceList.Add(GetPriceOuro(baseReturnprice, request.StoreId, MedalCode.Ouro));
+                            break;
+                        case MedalCode.Senior:
+                            returnPriceList.Add(GetPriceSenior(baseReturnprice, request.StoreId, MedalCode.Senior));
+                            break;
+                        case MedalCode.Hapvida:
+                            returnPriceList.Add(GetPriceHapvida(baseReturnprice, request.StoreId, MedalCode.Senior));
+                            break;
+                        default:
+                            returnPriceList.Add(baseReturnprice);
+                            break;
+                    }
                 }
                 else
                 {
@@ -59,7 +67,7 @@ namespace PrecoApi.Service
             return bestPriceReturnList;
         }
 
-        public ReturnPrice GetPriceOuro(ReturnPrice baseReturnPrice, long storeId, MedalCode medalCode)
+        private ReturnPrice GetPriceOuro(ReturnPrice baseReturnPrice, long storeId, MedalCode medalCode)
         {
             MedalDiscount medalDiscount = GetMedalDiscount(baseReturnPrice.ProductId, storeId, medalCode);
 
@@ -75,7 +83,7 @@ namespace PrecoApi.Service
             return returnPrice;
         }
 
-        public ReturnPrice GetPriceSenior(ReturnPrice baseReturnPrice, long storeId, MedalCode medalCode)
+        private ReturnPrice GetPriceSenior(ReturnPrice baseReturnPrice, long storeId, MedalCode medalCode)
         {
             MedalDiscount medalDiscount = GetMedalDiscount(baseReturnPrice.ProductId, storeId, medalCode);
 
@@ -91,11 +99,27 @@ namespace PrecoApi.Service
             return returnPrice;
         }
 
-        public ReturnPrice GetPriceNotRegistered(ReturnPrice baseReturnPrice)
+        private ReturnPrice GetPriceHapvida(ReturnPrice baseReturnPrice, long storeId, MedalCode medalCode)
+        {
+            MedalDiscount medalDiscount = GetMedalDiscount(baseReturnPrice.ProductId, storeId, medalCode);
+
+            ReturnPrice returnPrice = new ReturnPrice
+            {
+                DiscountType = DiscountType.Senior,
+                MaximumPrice = baseReturnPrice.MaximumPrice,
+                PercentageDiscount = medalDiscount.PercentualDesconto,
+                ProductId = baseReturnPrice.ProductId,
+                SalePrice = baseReturnPrice.MaximumPrice - Decimal.Multiply(baseReturnPrice.MaximumPrice, medalDiscount.PercentualDesconto / 100)
+            };
+
+            return returnPrice;
+        }
+
+        private ReturnPrice GetPriceNotRegistered(ReturnPrice baseReturnPrice)
         {
             ReturnPrice returnPrice = new ReturnPrice
             {
-                DiscountType = DiscountType.NãoCadastrado,
+                DiscountType = DiscountType.NaoCadastrado,
                 MaximumPrice = baseReturnPrice.SalePrice,
                 PercentageDiscount = 0,
                 ProductId = baseReturnPrice.ProductId,
@@ -110,7 +134,7 @@ namespace PrecoApi.Service
             return new ReturnPrice();
         }
 
-        public async Task<ReturnPrice> GetPriceAzulAsync(string productId, string storeId, bool customerRegistered)
+        private async Task<ReturnPrice> GetPriceAzulAsync(string productId, string storeId, bool customerRegistered)
         {
             PriceModel priceModel = await new RequestService<PriceModel>(httpClient).SendResquest($"https://dev.apipmenos.com/price/v1/" + productId + "?subsidiaryId=" + storeId, "vhubPbOuqb7X5ZEuflnJN1c3GlR03K2x4KzAt6d1");
             Decimal SalePrice;
@@ -133,14 +157,14 @@ namespace PrecoApi.Service
             return returnPrice;
         }
 
-        public async Task<CustomerScore> GetCustomerScoreAsync(string cpfCnpj)
+        private async Task<CustomerScore> GetCustomerScoreAsync(string cpfCnpj)
         {
             CustomerScoreModel customerScoreModel = await new RequestService<CustomerScoreModel>(httpClient).SendResquest($"https://dev.apipmenos.com/customer/v1/score/" + cpfCnpj, "4IBFLIlhDo4Uo9wXMGLd22JxPIax3DZwaNMSnK5w");
 
             return customerScoreModel.customerScore;
         }
 
-        public BestPriceReturn GetBestPrice(List<ReturnPrice> priceList)
+        private BestPriceReturn GetBestPrice(List<ReturnPrice> priceList)
         {
             ReturnPrice priceReturn = priceList.OrderBy(x => x.SalePrice).ToList()[0];
 

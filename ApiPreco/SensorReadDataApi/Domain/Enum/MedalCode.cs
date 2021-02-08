@@ -5,6 +5,7 @@
         NotRegistered = 0,
         Azul = 1,
         Ouro = 2,
-        Senior = 3
+        Senior = 3,
+        Hapvida = 4
     }
 }

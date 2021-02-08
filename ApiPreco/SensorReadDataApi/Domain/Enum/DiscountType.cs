@@ -2,6 +2,7 @@
 {
     public enum DiscountType
     {
+        NaoCadastrado = 0,
         Azul = 1,
         Ouro = 2,
         Senior = 3,
@@ -9,7 +10,6 @@
         DSM = 5,
         PBM = 6,
         UltimaChance = 7,
-        Segmentado = 8,
-        NãoCadastrado = 9
+        Segmentado = 8
     }
 }
